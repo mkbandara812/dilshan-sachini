@@ -1,0 +1,13 @@
+{
+  "name": "premium-wedding-invitation",
+  "version": "1.0.0",
+  "description": "Premium wedding invitation website using Node.js and Express",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

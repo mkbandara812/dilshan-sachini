@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#07050b" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Dilshan &amp; Sachini" />
+  <title>Dilshan &amp; Sachini | Wedding Invitation</title>
+  <meta name="description" content="You are cordially invited to celebrate the wedding of Dilshan &amp; Sachini — 17 May 2026, Lavendish Wild, Sinhalaragama." />
+  <meta property="og:title" content="Dilshan &amp; Sachini | Wedding Invitation" />
+  <meta property="og:description" content="Join us to celebrate our special day — 17 May 2026" />
+  <meta property="og:type" content="website" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <audio id="bgMusic" loop preload="auto">
+    <source src="music/wedding-music.mp3" type="audio/mpeg" />
+  </audio>
+
+  <!-- Floating Petals -->
+  <div id="petalsContainer" class="petals-container" aria-hidden="true"></div>
+
+  <!-- Music Toggle -->
+  <button id="musicToggle" class="music-toggle" aria-label="Toggle music" title="Toggle music">
+    <svg id="musicIconOn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M9 18V5l12-2v13"/>
+      <circle cx="6" cy="18" r="3"/>
+      <circle cx="18" cy="16" r="3"/>
+    </svg>
+    <svg id="musicIconOff" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none">
+      <path d="M9 18V5l12-2v13"/>
+      <circle cx="6" cy="18" r="3"/>
+      <circle cx="18" cy="16" r="3"/>
+      <line x1="2" y1="2" x2="22" y2="22"/>
+    </svg>
+  </button>
+
+  <!-- Opening Screen -->
+  <div id="openingScreen" class="opening-screen">
+    <div class="opening-bg"></div>
+    <canvas id="particleCanvas" class="particle-canvas"></canvas>
+    <div class="opening-content">
+      <p class="opening-eyebrow">You are cordially invited</p>
+      <div id="envelope" class="envelope" role="button" tabindex="0" aria-label="Open invitation">
+        <div class="envelope-back">
+          <div class="envelope-seal">❦</div>
+        </div>
+        <div class="envelope-flap"></div>
+        <div class="envelope-paper">
+          <p class="mini-title">Wedding Invitation</p>
+          <h2>Dilshan <span>&amp;</span> Sachini</h2>
+          <p class="tap-text">
+            <span class="tap-icon">✦</span> Touch to Open <span class="tap-icon">✦</span>
+          </p>
+        </div>
+      </div>
+      <p class="opening-date">17 · May · 2026</p>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main id="mainContent" class="main-content hidden">
+
+    <!-- Hero -->
+    <section class="hero section">
+      <div class="hero-overlay"></div>
+      <div class="hero-glow hero-glow-1"></div>
+      <div class="hero-glow hero-glow-2"></div>
+      <div class="container hero-content">
+        <p class="eyebrow reveal-up" style="--delay:0.1s">Together with our families</p>
+        <h1 class="reveal-up" style="--delay:0.25s">Dilshan <span>&amp;</span> Sachini</h1>
+        <p class="hero-text reveal-up" style="--delay:0.4s">
+          Request the honour of your presence as we celebrate the beginning of our forever.
+        </p>
+        <div class="hero-date-card glass-card reveal-up" style="--delay:0.55s">
+          <div>
+            <small>Date</small>
+            <strong>17 May 2026</strong>
+          </div>
+          <div class="divider-v"></div>
+          <div>
+            <small>Time</small>
+            <strong>11:00 AM - 5:00 PM</strong>
+          </div>
+          <div class="divider-v"></div>
+          <div>
+            <small>Venue</small>
+            <strong>Lavendish Wild</strong>
+          </div>
+        </div>
+        <a href="#rsvp" class="primary-btn reveal-up" style="--delay:0.7s">
+          <span>Confirm Attendance</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+      </div>
+    </section>
+
+    <!-- Intro -->
+    <section class="section intro-section">
+      <div class="container narrow">
+        <p class="section-tag reveal-up">A Day to Remember</p>
+        <h2 class="reveal-up">We are delighted to invite you</h2>
+        <p class="section-text reveal-up">
+          Your love, blessings, and presence will make our special day even more meaningful.
+          Join us as we step into a new chapter filled with love, joy, and cherished memories.
+        </p>
+        <div class="hearts-divider reveal-up">
+          <span>❤</span><span>♡</span><span>❤</span>
+        </div>
+        <div class="ornament reveal-up" style="--delay:0.1s">
+          <span class="ornament-icon">✦ ✦ ✦</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Countdown -->
+    <section class="section countdown-section">
+      <div class="container">
+        <p class="section-tag reveal-up">Counting the Moments</p>
+        <h2 class="reveal-up">Countdown to Our Wedding</h2>
+        <div class="countdown-grid reveal-up" id="countdownGrid">
+          <div class="count-box glass-card">
+            <span id="days" class="count-num">00</span>
+            <small>Days</small>
+          </div>
+          <div class="count-box glass-card">
+            <span id="hours" class="count-num">00</span>
+            <small>Hours</small>
+          </div>
+          <div class="count-box glass-card">
+            <span id="minutes" class="count-num">00</span>
+            <small>Minutes</small>
+          </div>
+          <div class="count-box glass-card">
+            <span id="seconds" class="count-num">00</span>
+            <small>Seconds</small>
+          </div>
+        </div>
+        <p id="weddingDayMsg" class="wedding-day-msg hidden">🥂 The Celebration Has Begun! 🥂</p>
+      </div>
+    </section>
+
+    <!-- Details -->
+    <section id="details" class="section details-section">
+      <div class="container">
+        <p class="section-tag reveal-up">Wedding Details</p>
+        <h2 class="reveal-up">Celebration Information</h2>
+        <div class="details-grid">
+          <article class="detail-card glass-card reveal-up" style="--delay:0.1s">
+            <div class="detail-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="3"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8"  y1="2" x2="8"  y2="6"/>
+                <line x1="3"  y1="10" x2="21" y2="10"/>
+                <rect x="7" y="14" width="3" height="3" rx="0.5"/>
+              </svg>
+            </div>
+            <h3>Date</h3>
+            <p>Sunday, 17 May 2026</p>
+          </article>
+          <article class="detail-card glass-card reveal-up" style="--delay:0.2s">
+            <div class="detail-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9"/>
+                <polyline points="12 7 12 12 15.5 14.5"/>
+              </svg>
+            </div>
+            <h3>Time</h3>
+            <p>11:00 AM - 5:00 PM</p>
+          </article>
+          <article class="detail-card glass-card reveal-up" style="--delay:0.3s">
+            <div class="detail-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+            </div>
+            <h3>Venue</h3>
+            <p>Lavendish Wild<br /><span class="venue-sub">Sinhalaragama</span></p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Map -->
+    <section class="section map-section">
+      <div class="container">
+        <p class="section-tag reveal-up">Find Us</p>
+        <h2 class="reveal-up">Venue Location</h2>
+
+        <!-- Venue info chips -->
+        <div class="venue-strip reveal-up">
+          <div class="venue-chip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+              <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+            </svg>
+            <span><strong>Lavendish Wild</strong> · Sinhalaragama</span>
+          </div>
+          <div class="venue-chip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+              <rect x="3" y="4" width="18" height="18" rx="3"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <span>Sunday, <strong>17 May 2026</strong></span>
+          </div>
+          <div class="venue-chip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+              <circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14.5"/>
+            </svg>
+            <span><strong>11:00 AM - 5:00 PM</strong></span>
+          </div>
+        </div>
+
+
+        <a href="https://maps.app.goo.gl/SVFMbi7jf9iQ2c9n6" target="_blank" rel="noopener noreferrer" class="outline-btn reveal-up">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          Open in Google Maps
+        </a>
+      </div>
+    </section>
+
+    <!-- Quote -->
+    <section class="section quote-section">
+      <div class="container narrow quote-card glass-card reveal-up">
+        <p class="quote-mark">❦</p>
+        <p class="quote-text">
+          "A successful marriage requires falling in love many times, always with the same person."
+        </p>
+        <p class="quote-author">— Mignon McLaughlin</p>
+      </div>
+    </section>
+
+    <!-- RSVP -->
+    <section id="rsvp" class="section rsvp-section">
+      <div class="container narrow">
+        <p class="section-tag reveal-up">RSVP</p>
+        <h2 class="reveal-up">Please Confirm Your Attendance</h2>
+        <p class="section-text reveal-up">Kindly respond by 10 May 2026</p>
+        <form id="rsvpForm" class="rsvp-form glass-card reveal-up" novalidate>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="rsvp-name">Full Name <span class="req">*</span></label>
+              <input id="rsvp-name" type="text" name="name" placeholder="Your full name" required autocomplete="name" maxlength="80" />
+            </div>
+            <div class="form-group">
+              <label for="rsvp-phone">Phone Number <span class="req">*</span></label>
+              <input id="rsvp-phone" type="tel" name="phone" placeholder="0XX XXX XXXX" required autocomplete="tel" maxlength="20" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="rsvp-guests">Number of Guests</label>
+              <input id="rsvp-guests" type="number" name="guests" placeholder="1" min="1" max="10" value="1" />
+            </div>
+            <div class="form-group">
+              <label for="rsvp-attending">Attendance <span class="req">*</span></label>
+              <select id="rsvp-attending" name="attending" required>
+                <option value="">Will you attend?</option>
+                <option value="Yes">✓ Yes, I will attend</option>
+                <option value="No">✗ Sorry, I cannot attend</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="rsvp-message">Your Wishes</label>
+            <textarea id="rsvp-message" name="message" rows="4" placeholder="Share your wishes for the couple..." maxlength="500"></textarea>
+          </div>
+          <button type="submit" class="primary-btn submit-btn" id="submitBtn">
+            <span id="btnText">Send RSVP</span>
+            <svg id="btnIcon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+          <p id="formMessage" class="form-message"></p>
+        </form>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-hearts" aria-hidden="true">❤ ♡ ❤</div>
+      <p class="footer-names">Dilshan <span>&amp;</span> Sachini</p>
+      <p class="footer-date">17 · May · 2026</p>
+      <p class="footer-sub">With all our love &amp; gratitude</p>
+    </footer>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

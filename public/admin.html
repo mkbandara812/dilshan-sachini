@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — RSVP Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cinzel:wght@500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    :root {
+      --bg: #07050b;
+      --card: rgba(255,255,255,0.07);
+      --border: rgba(255,255,255,0.10);
+      --text: #f0e8dc;
+      --muted: #c4b8a8;
+      --gold: #f0cb78;
+      --green: #6de8a0;
+      --red: #f08888;
+      --shadow: 0 20px 60px rgba(0,0,0,0.45);
+    }
+
+    body {
+      font-family: "Inter", sans-serif;
+      background: linear-gradient(155deg, #060409 0%, #0d0812 50%, #060409 100%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Login overlay ── */
+    #loginOverlay {
+      position: fixed; inset: 0; z-index: 999;
+      background: linear-gradient(155deg, #060409 0%, #0d0812 100%);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .login-box {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.11);
+      backdrop-filter: blur(20px);
+      border-radius: 28px;
+      padding: 48px 40px;
+      width: min(90vw, 400px);
+      text-align: center;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.5);
+    }
+    .login-box h1 { font-family: "Cinzel", serif; font-size: 1.5rem; color: var(--gold); margin-bottom: 8px; }
+    .login-box p { color: var(--muted); font-size: 0.9rem; margin-bottom: 28px; }
+    .login-box input {
+      width: 100%; padding: 14px 18px;
+      border-radius: 14px; border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06); color: var(--text);
+      font-size: 1rem; font-family: "Inter",sans-serif;
+      outline: none; margin-bottom: 16px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .login-box input:focus { border-color: rgba(240,203,120,0.55); box-shadow: 0 0 0 4px rgba(240,203,120,0.08); }
+    .login-btn {
+      width: 100%; padding: 15px;
+      border: none; border-radius: 999px; cursor: pointer;
+      background: linear-gradient(135deg, #f5d88e, #d4943e);
+      color: #1a0e02; font-weight: 700; font-size: 0.97rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .login-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(200,145,50,0.4); }
+    .login-err { color: var(--red); font-size: 0.85rem; margin-top: 10px; min-height: 20px; }
+
+    /* ── Main dashboard ── */
+    #dashboard { display: none; padding: 40px 24px; max-width: 1200px; margin: 0 auto; }
+
+    header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 40px; }
+    header h1 { font-family: "Cinzel", serif; font-size: 1.7rem; color: var(--gold); }
+    header p { color: var(--muted); font-size: 0.84rem; margin-top: 4px; }
+
+    .top-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn-outline {
+      padding: 10px 22px; border-radius: 999px;
+      border: 1px solid rgba(240,203,120,0.35); background: transparent;
+      color: var(--gold); cursor: pointer; font-size: 0.88rem;
+      transition: all 0.25s;
+    }
+    .btn-outline:hover { background: rgba(240,203,120,0.1); border-color: var(--gold); }
+    .btn-danger {
+      padding: 10px 22px; border-radius: 999px;
+      border: 1px solid rgba(240,136,136,0.35); background: transparent;
+      color: var(--red); cursor: pointer; font-size: 0.88rem;
+      transition: all 0.25s;
+    }
+    .btn-danger:hover { background: rgba(240,136,136,0.08); border-color: var(--red); }
+
+    /* ── Stats ── */
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 36px; }
+    .stat-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 22px; padding: 28px 20px; text-align: center;
+      backdrop-filter: blur(16px); position: relative; overflow: hidden;
+    }
+    .stat-card::before {
+      content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent); opacity: 0.45;
+    }
+    .stat-num { font-family: "Cinzel", serif; font-size: 2.6rem; font-weight: 600; color: var(--gold); display: block; }
+    .stat-label { font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
+
+    /* ── Filter bar ── */
+    .filter-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 22px; align-items: center; }
+    .filter-bar input {
+      padding: 10px 16px; border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.11); background: rgba(255,255,255,0.06);
+      color: var(--text); font-size: 0.9rem; outline: none;
+      transition: border-color 0.3s;
+    }
+    .filter-bar input:focus { border-color: rgba(240,203,120,0.5); }
+    .filter-bar input[type="text"] { min-width: 220px; }
+    .filter-btn {
+      padding: 10px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.11);
+      background: rgba(255,255,255,0.06); color: var(--muted); cursor: pointer; font-size: 0.88rem;
+      transition: all 0.25s;
+    }
+    .filter-btn.active { background: rgba(240,203,120,0.15); border-color: rgba(240,203,120,0.5); color: var(--gold); }
+
+    /* ── Table ── */
+    .table-wrap {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 24px; overflow: hidden; backdrop-filter: blur(16px);
+    }
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      padding: 16px 18px; text-align: left;
+      font-size: 0.7rem; letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--gold); font-weight: 500; border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+    }
+    tbody tr { border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.2s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,0.04); }
+    tbody td { padding: 15px 18px; font-size: 0.9rem; color: var(--muted); vertical-align: middle; }
+    tbody td:first-child { color: var(--text); font-weight: 500; }
+
+    .badge {
+      display: inline-block; padding: 4px 12px; border-radius: 999px;
+      font-size: 0.75rem; font-weight: 600; letter-spacing: 0.05em;
+    }
+    .badge-yes { background: rgba(109,232,160,0.15); color: var(--green); border: 1px solid rgba(109,232,160,0.3); }
+    .badge-no  { background: rgba(240,136,136,0.13); color: var(--red);   border: 1px solid rgba(240,136,136,0.28); }
+
+    .no-data { padding: 60px 20px; text-align: center; color: var(--muted); font-size: 1rem; }
+
+    .msg-cell { max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      thead th:nth-child(5), tbody td:nth-child(5) { display: none; }
+    }
+    @media (max-width: 600px) {
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      thead th:nth-child(4), tbody td:nth-child(4), thead th:nth-child(6), tbody td:nth-child(6) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── LOGIN ── -->
+<div id="loginOverlay">
+  <div class="login-box">
+    <h1>RSVP Dashboard</h1>
+    <p>Dilshan &amp; Sachini · 17 May 2026</p>
+    <input type="password" id="pwInput" placeholder="Enter admin password" />
+    <button class="login-btn" onclick="doLogin()">Access Dashboard</button>
+    <p class="login-err" id="loginErr"></p>
+  </div>
+</div>
+
+<!-- ── DASHBOARD ── -->
+<div id="dashboard">
+  <header>
+    <div>
+      <h1>RSVP Dashboard</h1>
+      <p id="lastUpdated">Loading…</p>
+    </div>
+    <div class="top-actions">
+      <button class="btn-outline" onclick="loadData()">↻ Refresh</button>
+      <button class="btn-outline" onclick="exportCSV()">⬇ Export CSV</button>
+      <button class="btn-danger" onclick="doLogout()">Logout</button>
+    </div>
+  </header>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-card">
+      <span class="stat-num" id="sTotal">—</span>
+      <span class="stat-label">Total RSVPs</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-num" id="sAttending" style="color:#6de8a0">—</span>
+      <span class="stat-label">Attending</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-num" id="sNotAttending" style="color:#f08888">—</span>
+      <span class="stat-label">Not Attending</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-num" id="sGuests">—</span>
+      <span class="stat-label">Total Guests</span>
+    </div>
+  </div>
+
+  <!-- Filter -->
+  <div class="filter-bar">
+    <input type="text" id="searchInput" placeholder="🔍 Search by name or phone…" oninput="renderTable()" />
+    <button class="filter-btn active" id="btnAll"  onclick="setFilter('all')">All</button>
+    <button class="filter-btn"        id="btnYes"  onclick="setFilter('yes')">✓ Attending</button>
+    <button class="filter-btn"        id="btnNo"   onclick="setFilter('no')">✗ Not Attending</button>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Phone</th>
+          <th>Attending</th>
+          <th>Guests</th>
+          <th>Message</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody id="rsvpBody">
+        <tr><td colspan="7" class="no-data">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  // ── Password (change this!) ──
+  const ADMIN_PASSWORD = "dilsha2026";
+  let allData = [];
+  let activeFilter = "all";
+
+  // ── Login ──
+  function doLogin() {
+    const pw = document.getElementById("pwInput").value;
+    if (pw === ADMIN_PASSWORD) {
+      document.getElementById("loginOverlay").style.display = "none";
+      document.getElementById("dashboard").style.display = "block";
+      sessionStorage.setItem("adminAuth", "1");
+      loadData();
+    } else {
+      document.getElementById("loginErr").textContent = "Incorrect password. Try again.";
+      document.getElementById("pwInput").value = "";
+    }
+  }
+
+  document.getElementById("pwInput").addEventListener("keydown", e => {
+    if (e.key === "Enter") doLogin();
+  });
+
+  function doLogout() {
+    sessionStorage.removeItem("adminAuth");
+    location.reload();
+  }
+
+  // Auto-login if session exists
+  if (sessionStorage.getItem("adminAuth") === "1") {
+    document.getElementById("loginOverlay").style.display = "none";
+    document.getElementById("dashboard").style.display = "block";
+    loadData();
+  }
+
+  // ── Load Data ──
+  async function loadData() {
+    try {
+      const res  = await fetch("/api/rsvps");
+      const json = await res.json();
+      allData = json.entries || json;
+
+      // Stats
+      document.getElementById("sTotal").textContent       = json.total        ?? allData.length;
+      document.getElementById("sAttending").textContent   = json.attending     ?? allData.filter(r => r.attending === "Yes").length;
+      document.getElementById("sNotAttending").textContent= json.notAttending  ?? allData.filter(r => r.attending === "No").length;
+      document.getElementById("sGuests").textContent      = json.totalGuests   ?? allData.filter(r => r.attending === "Yes").reduce((s,r)=>s+parseInt(r.guests||1,10),0);
+      document.getElementById("lastUpdated").textContent  = "Last updated: " + new Date().toLocaleTimeString();
+
+      renderTable();
+    } catch (err) {
+      document.getElementById("rsvpBody").innerHTML = `<tr><td colspan="7" class="no-data">⚠️ Failed to load data. Is the server running?</td></tr>`;
+    }
+  }
+
+  // ── Filter ──
+  function setFilter(f) {
+    activeFilter = f;
+    ["btnAll","btnYes","btnNo"].forEach(id => document.getElementById(id).classList.remove("active"));
+    document.getElementById(f === "all" ? "btnAll" : f === "yes" ? "btnYes" : "btnNo").classList.add("active");
+    renderTable();
+  }
+
+  // ── Render Table ──
+  function renderTable() {
+    const q = document.getElementById("searchInput").value.toLowerCase().trim();
+    let data = allData;
+
+    if (activeFilter === "yes") data = data.filter(r => r.attending === "Yes");
+    if (activeFilter === "no")  data = data.filter(r => r.attending === "No");
+    if (q) data = data.filter(r => r.name.toLowerCase().includes(q) || r.phone.includes(q));
+
+    const tbody = document.getElementById("rsvpBody");
+    if (!data.length) {
+      tbody.innerHTML = `<tr><td colspan="7" class="no-data">No results found.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = data.map((r, i) => {
+      const date = new Date(r.createdAt);
+      const dateStr = date.toLocaleDateString("en-GB", { day:"2-digit", month:"short", year:"numeric" })
+                    + " " + date.toLocaleTimeString("en-GB", { hour:"2-digit", minute:"2-digit" });
+      const badge = r.attending === "Yes"
+        ? `<span class="badge badge-yes">✓ Yes</span>`
+        : `<span class="badge badge-no">✗ No</span>`;
+      const msg = r.message ? `<span class="msg-cell" title="${escHtml(r.message)}">${escHtml(r.message)}</span>` : `<span style="opacity:0.35">—</span>`;
+      return `<tr>
+        <td>${i+1}</td>
+        <td>${escHtml(r.name)}</td>
+        <td>${escHtml(r.phone)}</td>
+        <td>${badge}</td>
+        <td>${r.attending === "Yes" ? r.guests || "1" : "—"}</td>
+        <td>${msg}</td>
+        <td style="font-size:0.8rem;white-space:nowrap">${dateStr}</td>
+      </tr>`;
+    }).join("");
+  }
+
+  // ── Export CSV ──
+  function exportCSV() {
+    if (!allData.length) return alert("No data to export.");
+    const rows = [["#","Name","Phone","Attending","Guests","Message","Submitted At"]];
+    allData.forEach((r, i) => {
+      rows.push([i+1, r.name, r.phone, r.attending, r.guests||"1", r.message||"", r.createdAt]);
+    });
+    const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement("a");
+    a.href = url; a.download = "rsvps_dilshan_sachini.csv";
+    a.click(); URL.revokeObjectURL(url);
+  }
+
+  function escHtml(str) {
+    return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+</script>
+</body>
+</html>
