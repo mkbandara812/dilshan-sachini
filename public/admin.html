@@ -240,6 +240,9 @@
   let allData = [];
   let activeFilter = "all";
 
+  // ── Google Sheets URL ──
+  const SHEETS_URL = "https://script.google.com/macros/s/AKfycbz_643DDao5_9YUdxhqGssvAun_vlEEscmCqOLGDk07bzLjUuAFuuhmbAtaYD9x30uA/exec";
+
   // ── Login ──
   function doLogin() {
     const pw = document.getElementById("pwInput").value;
@@ -271,55 +274,83 @@
   }
 
   // ── Load Data from Google Sheets ──
-  const SHEETS_URL = "https://script.google.com/macros/s/AKfycbx8wkpg7X23KEx2Z6V0-8958jBK3NLTzeJ5tiQDPJPbvjPTJ5fDfaVQ-XitOqXmkQz3/exec";
 
-  async function loadData() {
-    try {
-      // Fetch data from Google Sheets (GET request with action=list)
-      const res = await fetch(`${SHEETS_URL}?action=list`, {
-        method: "GET",
-        mode: "cors"
-      });
-
-      let data;
-      try {
-        data = await res.json();
-      } catch {
-        // If JSON parsing fails, try text and parse
-        const text = await res.text();
-        data = JSON.parse(text);
-      }
-
-      allData = Array.isArray(data) ? data : (data.entries || []);
-
-      // If no data returned, show message
-      if (!allData.length) {
-        document.getElementById("rsvpBody").innerHTML = `<tr><td colspan="7" class="no-data">No RSVPs yet. Data will appear here when guests submit.</td></tr>`;
-        // Reset stats to 0
-        document.getElementById("sTotal").textContent = "0";
-        document.getElementById("sAttending").textContent = "0";
-        document.getElementById("sNotAttending").textContent = "0";
-        document.getElementById("sGuests").textContent = "0";
-        document.getElementById("lastUpdated").textContent = "Last updated: " + new Date().toLocaleTimeString();
-        return;
-      }
-
-      // Stats
-      const attending = allData.filter(r => r.attending === "Yes" || r.attending === "yes");
-      const notAttending = allData.filter(r => r.attending === "No" || r.attending === "no");
-      const totalGuests = attending.reduce((sum, r) => sum + parseInt(r.guests || 1, 10), 0);
-
-      document.getElementById("sTotal").textContent = allData.length;
-      document.getElementById("sAttending").textContent = attending.length;
-      document.getElementById("sNotAttending").textContent = notAttending.length;
-      document.getElementById("sGuests").textContent = totalGuests;
-      document.getElementById("lastUpdated").textContent = "Last updated: " + new Date().toLocaleTimeString();
-
-      renderTable();
-    } catch (err) {
-      console.error("Load error:", err);
-      document.getElementById("rsvpBody").innerHTML = `<tr><td colspan="7" class="no-data">⚠️ Failed to load data.<br><small>Google Sheets API error. Please check the Apps Script setup.</small></td></tr>`;
+  // JSONP callback function
+  window.handleSheetData = function(data) {
+    console.log("✅ Received data from Google Sheets:", data);
+    console.log("Data type:", typeof data);
+    console.log("Is array:", Array.isArray(data));
+    if (Array.isArray(data)) {
+      console.log("Number of entries:", data.length);
     }
+
+    if (!data || !Array.isArray(data)) {
+      console.error("❌ Invalid data format received:", data);
+      document.getElementById("rsvpBody").innerHTML = `<tr><td colspan="7" class="no-data">Invalid data format received from Google Sheets.</td></tr>`;
+      return;
+    }
+
+    allData = data;
+
+    // If no data returned, show message
+    if (!allData.length) {
+      document.getElementById("rsvpBody").innerHTML = `<tr><td colspan="7" class="no-data">No RSVPs yet. Data will appear here when guests submit.</td></tr>`;
+      document.getElementById("sTotal").textContent = "0";
+      document.getElementById("sAttending").textContent = "0";
+      document.getElementById("sNotAttending").textContent = "0";
+      document.getElementById("sGuests").textContent = "0";
+      return;
+    }
+
+    // Stats
+    const attending = allData.filter(r => (r.attending || "").toLowerCase() === "yes");
+    const notAttending = allData.filter(r => (r.attending || "").toLowerCase() === "no");
+    const totalGuests = attending.reduce((sum, r) => sum + parseInt(r.guests || 1, 10), 0);
+
+    document.getElementById("sTotal").textContent = allData.length;
+    document.getElementById("sAttending").textContent = attending.length;
+    document.getElementById("sNotAttending").textContent = notAttending.length;
+    document.getElementById("sGuests").textContent = totalGuests;
+    document.getElementById("lastUpdated").textContent = "Last updated: " + new Date().toLocaleTimeString();
+
+    renderTable();
+  };
+
+  function loadData() {
+    console.log("🔄 Loading data from:", SHEETS_URL);
+
+    // Remove any existing script tag
+    const existingScript = document.getElementById("sheetLoader");
+    if (existingScript) existingScript.remove();
+
+    // Create new script tag for JSONP
+    const script = document.createElement("script");
+    script.id = "sheetLoader";
+    const fullUrl = SHEETS_URL + "?callback=handleSheetData";
+    console.log("📡 Fetching URL:", fullUrl);
+    script.src = fullUrl;
+
+    script.onload = function() {
+      console.log("✅ Script loaded successfully");
+    };
+
+    script.onerror = function(e) {
+      console.error("❌ Failed to load script:", e);
+      document.getElementById("rsvpBody").innerHTML = `
+        <tr><td colspan="7" class="no-data">
+          ⚠️ Failed to connect to Google Sheets.<br><br>
+          <small style="color: var(--muted);">
+            <b>Check browser console (F12) for detailed error.</b><br><br>
+            Common fixes:<br>
+            1. Apps Script → Deploy → Manage deployments → Edit<br>
+            2. Set "Who has access" to "Anyone" (NOT "Anyone with Google account")<br>
+            3. Click Deploy to get new URL<br>
+            4. Update URL in admin.html and script.js
+          </small>
+        </td></tr>`;
+    };
+    document.body.appendChild(script);
+    console.log("📜 Script tag added to body");
   }
 
   // ── Filter ──
