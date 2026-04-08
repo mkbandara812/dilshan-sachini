@@ -121,7 +121,10 @@
     /* ── Table ── */
     .table-wrap {
       background: var(--card); border: 1px solid var(--border);
-      border-radius: 24px; overflow: hidden; backdrop-filter: blur(16px);
+      border-radius: 24px; overflow-x: auto; backdrop-filter: blur(16px);
+    }
+    .table-wrap table {
+      min-width: 800px;
     }
     table { width: 100%; border-collapse: collapse; }
     thead th {
