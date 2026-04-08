@@ -270,23 +270,55 @@
     loadData();
   }
 
-  // ── Load Data ──
+  // ── Load Data from Google Sheets ──
+  const SHEETS_URL = "https://script.google.com/macros/s/AKfycbx8wkpg7X23KEx2Z6V0-8958jBK3NLTzeJ5tiQDPJPbvjPTJ5fDfaVQ-XitOqXmkQz3/exec";
+
   async function loadData() {
     try {
-      const res  = await fetch("/api/rsvps");
-      const json = await res.json();
-      allData = json.entries || json;
+      // Fetch data from Google Sheets (GET request with action=list)
+      const res = await fetch(`${SHEETS_URL}?action=list`, {
+        method: "GET",
+        mode: "cors"
+      });
+
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        // If JSON parsing fails, try text and parse
+        const text = await res.text();
+        data = JSON.parse(text);
+      }
+
+      allData = Array.isArray(data) ? data : (data.entries || []);
+
+      // If no data returned, show message
+      if (!allData.length) {
+        document.getElementById("rsvpBody").innerHTML = `<tr><td colspan="7" class="no-data">No RSVPs yet. Data will appear here when guests submit.</td></tr>`;
+        // Reset stats to 0
+        document.getElementById("sTotal").textContent = "0";
+        document.getElementById("sAttending").textContent = "0";
+        document.getElementById("sNotAttending").textContent = "0";
+        document.getElementById("sGuests").textContent = "0";
+        document.getElementById("lastUpdated").textContent = "Last updated: " + new Date().toLocaleTimeString();
+        return;
+      }
 
       // Stats
-      document.getElementById("sTotal").textContent       = json.total        ?? allData.length;
-      document.getElementById("sAttending").textContent   = json.attending     ?? allData.filter(r => r.attending === "Yes").length;
-      document.getElementById("sNotAttending").textContent= json.notAttending  ?? allData.filter(r => r.attending === "No").length;
-      document.getElementById("sGuests").textContent      = json.totalGuests   ?? allData.filter(r => r.attending === "Yes").reduce((s,r)=>s+parseInt(r.guests||1,10),0);
-      document.getElementById("lastUpdated").textContent  = "Last updated: " + new Date().toLocaleTimeString();
+      const attending = allData.filter(r => r.attending === "Yes" || r.attending === "yes");
+      const notAttending = allData.filter(r => r.attending === "No" || r.attending === "no");
+      const totalGuests = attending.reduce((sum, r) => sum + parseInt(r.guests || 1, 10), 0);
+
+      document.getElementById("sTotal").textContent = allData.length;
+      document.getElementById("sAttending").textContent = attending.length;
+      document.getElementById("sNotAttending").textContent = notAttending.length;
+      document.getElementById("sGuests").textContent = totalGuests;
+      document.getElementById("lastUpdated").textContent = "Last updated: " + new Date().toLocaleTimeString();
 
       renderTable();
     } catch (err) {
-      document.getElementById("rsvpBody").innerHTML = `<tr><td colspan="7" class="no-data">⚠️ Failed to load data. Is the server running?</td></tr>`;
+      console.error("Load error:", err);
+      document.getElementById("rsvpBody").innerHTML = `<tr><td colspan="7" class="no-data">⚠️ Failed to load data.<br><small>Google Sheets API error. Please check the Apps Script setup.</small></td></tr>`;
     }
   }
 
@@ -303,9 +335,9 @@
     const q = document.getElementById("searchInput").value.toLowerCase().trim();
     let data = allData;
 
-    if (activeFilter === "yes") data = data.filter(r => r.attending === "Yes");
-    if (activeFilter === "no")  data = data.filter(r => r.attending === "No");
-    if (q) data = data.filter(r => r.name.toLowerCase().includes(q) || r.phone.includes(q));
+    if (activeFilter === "yes") data = data.filter(r => r.attending === "Yes" || r.attending === "yes");
+    if (activeFilter === "no")  data = data.filter(r => r.attending === "No" || r.attending === "no");
+    if (q) data = data.filter(r => (r.name || "").toLowerCase().includes(q) || (r.phone || "").includes(q));
 
     const tbody = document.getElementById("rsvpBody");
     if (!data.length) {
@@ -314,20 +346,40 @@
     }
 
     tbody.innerHTML = data.map((r, i) => {
-      const date = new Date(r.createdAt);
-      const dateStr = date.toLocaleDateString("en-GB", { day:"2-digit", month:"short", year:"numeric" })
-                    + " " + date.toLocaleTimeString("en-GB", { hour:"2-digit", minute:"2-digit" });
-      const badge = r.attending === "Yes"
+      // Handle timestamp from Google Sheets (could be Date object or string)
+      let dateStr = "—";
+      if (r.timestamp || r.createdAt || r.date) {
+        const ts = r.timestamp || r.createdAt || r.date;
+        try {
+          const date = new Date(ts);
+          if (!isNaN(date.getTime())) {
+            dateStr = date.toLocaleDateString("en-GB", { day:"2-digit", month:"short", year:"numeric" })
+                      + " " + date.toLocaleTimeString("en-GB", { hour:"2-digit", minute:"2-digit" });
+          }
+        } catch(e) {
+          dateStr = String(ts);
+        }
+      }
+
+      const attendingVal = (r.attending || "").toLowerCase();
+      const isAttending = attendingVal === "yes" || attendingVal === "true";
+      const badge = isAttending
         ? `<span class="badge badge-yes">✓ Yes</span>`
         : `<span class="badge badge-no">✗ No</span>`;
-      const msg = r.message ? `<span class="msg-cell" title="${escHtml(r.message)}">${escHtml(r.message)}</span>` : `<span style="opacity:0.35">—</span>`;
+
+      const guests = parseInt(r.guests || r.guestCount || 1, 10);
+      const guestsDisplay = isAttending ? guests : "—";
+
+      const msg = r.message || r.wishes || r.notes || "";
+      const msgCell = msg ? `<span class="msg-cell" title="${escHtml(msg)}">${escHtml(msg)}</span>` : `<span style="opacity:0.35">—</span>`;
+
       return `<tr>
         <td>${i+1}</td>
-        <td>${escHtml(r.name)}</td>
-        <td>${escHtml(r.phone)}</td>
+        <td>${escHtml(r.name || r.fullName || "—")}</td>
+        <td>${escHtml(r.phone || r.phoneNumber || r.contact || "—")}</td>
         <td>${badge}</td>
-        <td>${r.attending === "Yes" ? r.guests || "1" : "—"}</td>
-        <td>${msg}</td>
+        <td>${guestsDisplay}</td>
+        <td>${msgCell}</td>
         <td style="font-size:0.8rem;white-space:nowrap">${dateStr}</td>
       </tr>`;
     }).join("");
@@ -338,7 +390,13 @@
     if (!allData.length) return alert("No data to export.");
     const rows = [["#","Name","Phone","Attending","Guests","Message","Submitted At"]];
     allData.forEach((r, i) => {
-      rows.push([i+1, r.name, r.phone, r.attending, r.guests||"1", r.message||"", r.createdAt]);
+      const name = r.name || r.fullName || "";
+      const phone = r.phone || r.phoneNumber || r.contact || "";
+      const attending = r.attending || "";
+      const guests = r.guests || r.guestCount || "1";
+      const message = r.message || r.wishes || r.notes || "";
+      const timestamp = r.timestamp || r.createdAt || r.date || "";
+      rows.push([i+1, name, phone, attending, guests, message, timestamp]);
     });
     const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });

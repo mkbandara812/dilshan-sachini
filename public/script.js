@@ -286,7 +286,7 @@ form.addEventListener("submit", async (e) => {
 
   try {
     const data = Object.fromEntries(new FormData(form).entries());
-    const res = await fetch("https://script.google.com/macros/s/AKfycbyoLTR4suveah-DF_q1NVhtmRkvKlwfL-iBowkLqWkkctU_J4CaR3sM-Vua25IdfiDz/exec", {
+    const res = await fetch("https://script.google.com/macros/s/AKfycbx8wkpg7X23KEx2Z6V0-8958jBK3NLTzeJ5tiQDPJPbvjPTJ5fDfaVQ-XitOqXmkQz3/exec", {
       method: "POST",
       mode: "no-cors",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
